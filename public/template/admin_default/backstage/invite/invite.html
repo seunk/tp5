@@ -1,0 +1,292 @@
+<extend name="public/base"/>
+<block name="body">
+    <div class="layui-elem-quote" >
+        <a href="{:url('Backstage/Index/index')}">首页<span class="layui-box">&gt;</span></a>
+        <a><cite>邀请码列表页面</cite></a>
+        <div class="page-toolbar">
+            <include file="public/_addTo"/>
+        </div>
+    </div>
+    <fieldset class="layui-elem-field layui-field-title">
+        <legend>{:lang('_INVITATION_CODE_LIST_PAGE_')}</legend>
+    </fieldset>
+
+    <!-- 按钮工具栏 -->
+    <div class="with-padding margin-bottom-20">
+        <div class="fl layui-form">
+            <div class="layui-btn-group" style="margin-bottom: 10px;">
+                <button class="layui-btn layui-btn-primary ajax-post" url="{:url('invite/delete',array('status'=>-1))}" target-form="ids">
+                    {:lang("_DELETE_")}
+                </button>
+                <button data-title={:lang("_GENERATE_THE_INVITATION_CODE_WITH_DOUBLE_")} modal-url="{:url('invite/createcode')}" data-role="modal_popup" class="layui-btn layui-btn-primary">
+                    {:lang("_GENERATE_INVITATION_CODE_")}
+                </button>
+                <button class="layui-btn layui-btn-primary ajax-post" url="{:url('invite/deletetrue',array('status'=>-1))}" target-form="ids">
+                    {:lang("_EMPTY_THE_USELESS_INVITATION_CODE_")}
+                </button>
+                <button class="layui-btn layui-btn-primary" data-role="copy_code_list">
+                    {:lang("_BATCH_COPY_INVITATION_CODE_")}
+                </button>
+                <button class="layui-btn layui-btn-primary"  data-role="copy_code_url_list">
+                    {:lang("_BATCH_COPY_INVITATION_LINK_")}
+                </button>
+                <button class="layui-btn layui-btn-primary" data-role="cvs" data-url="{:url('invite/cvs')}">
+                    {:lang("_EXPORT_CVS_")}
+                </button>
+            </div>
+            <!-- 选择框select -->
+            <div style="float: right; margin-bottom: 10px;">
+                <style>
+                    .oneselect {
+                        display: inline-block;
+                        margin-left: 10px;
+                    }
+
+                    .oneselect .title {
+                        float: left;
+                        line-height: 32px;
+                    }
+
+                    .oneselect .select_box {
+                        float: left;
+                        line-height: 32px;
+                    }
+
+                    .oneselect .select_box select {
+                        min-width: 200px;
+                    }
+                </style>
+                <form id="selectForm" method="get" action="{:url('Invite/invite')}" class="form-dont-clear-url-param">
+                    <div class="oneselect">
+                        <div class="title">{:lang("_INVITATION_CODE_TYPE_")}{:lang("_COLON_")}</div>
+                        <div class="select_box">
+                            <select name="type" data-role="select_text" class="form-control">
+                                <volist name="type_list" id="type">
+                                    <php>if($type['id']==$now_type){</php>
+                                    <option value="{$type.id}" selected>{$type.value}</option>
+                                    <php>}else{</php>
+                                    <option value="{$type.id}">{$type.value}</option>
+                                    <php>}</php>
+                                </volist>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="oneselect">
+                        <div class="select_box">
+                            <select name="status" data-role="select_text" class="form-control">
+                                <option value="1" selected>{:lang("_CAN_BE_REGISTERED_")}</option>
+                                <option value="3">{:lang("_EXPIRED_")}</option>
+                                <option value="2">{:lang("_REFUND_")}</option>
+                                <option value="0">{:lang("_INVALID_")}</option>
+                                <option value="-1">{:lang("_ADMINISTRATOR_DELETE_")}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="oneselect">
+                        <div class="select_box">
+                            <select name="buyer" data-role="select_text" class="form-control">
+                                <option value="-1" <eq name="buyer" value="-1">selected</eq>>{:lang("_ADMINISTRATOR_GENERATION_")}</option>
+                                <option value="1" <eq name="buyer" value="1">selected</eq>>{:lang("_USER_PURCHASE_")}</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 数据表格 -->
+    <div class="with-padding layui-form">
+        <table class="layui-table" lay-even>
+            <!-- 表头 -->
+            <thead>
+            <tr>
+                <th>
+                    <input type="checkbox" name="" lay-skin="primary" lay-filter="allChoose" />
+                </th>
+                <th>ID</th>
+                <th>{:lang("_INVITATION_CODE_")}</th>
+                <th style="width: 250px;">{:lang("_INVITATION_CODE_LINK_")}</th>
+                <th>{:lang("_INVITATION_CODE_TYPE_")}</th>
+                <th>{:lang("_BUYERS_")}</th>
+                <th>{:lang("_CAN_BE_REGISTERED_A_FEW_")}</th>
+                <th>{:lang("_ALREADY_REGISTERED_SEVERAL_")}</th>
+                <th>{:lang("_PERIOD_OF_VALIDITY_")}</th>
+                <th>{:lang("_CREATE_TIME_")}</th>
+                <th>{:lang("_OPERATION_")}</th>
+            </tr>
+            </thead>
+
+            <!-- 列表 -->
+            <tbody>
+            <volist name="invite_list" id="invite">
+                <tr>
+                    <td>
+                        <input class="ids" type="checkbox" value="{$invite.id}" name="ids[]"  lay-skin="primary" data-code="{$invite.code}" data-code-url="{$invite.code_url}">
+                    </td>
+                    <td>{$invite.id}</td>
+                    <td>{$invite.code}</td>
+                    <td>{$invite.code_url}</td>
+                    <td>{$invite.invite}</td>
+                    <td>{$invite.buyer}</td>
+                    <td>{$invite.can_num}</td>
+                    <td>{$invite.already_num}</td>
+                    <td>{$invite.end_time|time_format}</td>
+                    <td>{$invite.create_time|time_format}</td>
+                    <td>
+                        <div style="position: relative;">
+                            <a data-role="copy_code" data-code="{$invite.code}">{:lang("_COPY_INVITATION_CODE_")}</a> <a data-role="copy_code_url" data-code-url="{$invite.code_url}" style="margin-left: 10px;">{:lang("_COPY_INVITATION_LINK_")}</a>
+                        </div>
+                    </td>
+                </tr>
+            </volist>
+
+            </tbody>
+        </table>
+    </div>
+    <!-- 分页 -->
+    <div class="with-padding">
+        {$pagination}
+    </div>
+    </div>
+</block>
+<block name="script">
+    <script type="text/javascript" src="__STATIC__/js/ext/zclip/jquery.zclip.min.js"></script>
+    <script type="text/javascript">
+        function toggle_search(){
+            $('#search_form').toggle('slide');
+        }
+
+        $(document).on('submit', '.form-dont-clear-url-param', function(e){
+            e.preventDefault();
+
+            var seperator = "&";
+            var form = $(this).serialize();
+            var action = $(this).attr('action');
+            if(action == ''){
+                action = location.href;
+            }
+            var new_location = action + seperator + form;
+
+            location.href = new_location;
+
+            return false;
+        });
+
+        $(function(){
+            $('[data-role="copy_code"]').zclip({
+                copy: function () {
+                    return $(this).attr('data-code');
+                },
+                afterCopy: function () {
+                    $(this).html({:lang('_HAS_BEEN_COPIED_WITH_SINGLE_')});
+                    toast.success({:lang('_COPY_SUCCESS_WITH_SINGLE_')});
+                }
+            });
+            $('[data-role="copy_code_url"]').zclip({
+                copy: function () {
+                    return $(this).attr('data-code-url');
+                },
+                afterCopy: function () {
+                    $(this).html({:lang('_LINK_HAS_BEEN_COPIED_WITH_SINGLE_')});
+                    toast.success({:lang('_REPLICATION_LINK_SUCCESS_WITH_SINGLE_')});
+                }
+            });
+            $('[data-role="copy_code_list"]').zclip({
+                copy: function () {
+                    var code_list='';
+                    $('.ids').each(function(){
+                        if($(this).is(":checked")){
+                            code_list+=$(this).attr('data-code')+'\n';
+                        }
+                    });
+                    if(code_list!=''){
+                        return code_list;
+                    }else{
+                        toast.error({:lang('_PLEASE_SELECT_THE_DATA_WITH_SINGLE_')});
+                    }
+                },
+                afterCopy: function () {
+                    toast.success({:lang('_BATCH_COPY_SUCCESS_WITH_SINGLE_')});
+                }
+            });
+            $('[data-role="copy_code_url_list"]').zclip({
+                copy: function () {
+                    var code_list_url='';
+                    $('.ids').each(function(){
+                        if($(this).is(":checked")){
+                            code_list_url+=$(this).attr('data-code-url')+'\n\n';
+                        }
+                    });
+                    if(code_list_url!=''){
+                        return code_list_url;
+                    }else{
+                        toast.error({:lang('_PLEASE_SELECT_THE_DATA_WITH_SINGLE_')});
+                    }
+                },
+                afterCopy: function () {
+                    toast.success({:lang('_BATCH_COPY_SUCCESS_WITH_SINGLE_')});
+                }
+            });
+            $('[data-role="cvs"]').click(function(){
+                var data_url=$(this).attr('data-url');
+                var form=$('.ids');
+                if (form.get(0) == undefined) {
+                } else if (form.get(0).nodeName == 'FORM') {
+                    query = form.serialize();
+                } else if (form.get(0).nodeName == 'INPUT' || form.get(0).nodeName == 'SELECT' || form.get(0).nodeName == 'TEXTAREA') {
+                    query = form.serialize();
+                } else {
+                    query = form.find('input,select,textarea').serialize();
+                }
+                data_url+='&'+query;
+                window.open(data_url);
+            });
+            $('[data-role="select_text"]').change(function(){
+                $('#selectForm').submit();
+            });
+            //模态弹窗
+            $('[data-role="modal_popup"]').click(function(){
+                var target_url=$(this).attr('modal-url');
+                var data_title=$(this).attr('data-title');
+                var target_form=$(this).attr('target-form');
+                if(target_form!=undefined){
+                    //设置了参数时，把参数加入
+                    var form=$('.'+target_form);
+
+                    if (form.get(0) == undefined) {
+                       toast.error("{:lang('_NO_OPERATIONAL_DATA_WITH_SINGLE_')}");
+                        return false;
+                    } else if (form.get(0).nodeName == 'FORM') {
+                        query = form.serialize();
+                    } else if (form.get(0).nodeName == 'INPUT' || form.get(0).nodeName == 'SELECT' || form.get(0).nodeName == 'TEXTAREA') {
+                        query = form.serialize();
+                    } else {
+                        query = form.find('input,select,textarea').serialize();
+                    }
+                    if(!query.length){
+                        toast.error("{:lang('_NO_OPERATIONAL_DATA_WITH_SINGLE_')}");
+                        return false;
+                    }
+                    target_url=target_url+'&'+query;
+                }
+                layer_open(target_url,data_title,'400px','300px');
+            });
+            $('.tox-confirm').click(function(e){
+                var text = $(this).attr('data-confirm');
+                var result = confirm(text);
+                if(result) {
+                    return true;
+                } else {
+                    e.stopImmediatePropagation();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            //导航高亮
+            highlight_subnav("{:url('Invite/invite')}");
+        });
+    </script>
+</block>
